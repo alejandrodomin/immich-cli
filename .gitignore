@@ -36,6 +36,7 @@
 *.exe
 *.out
 *.app
+immich-cli
 
 # debug information files
 *.dwo
