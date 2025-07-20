@@ -3,7 +3,7 @@ OBJ_DIR := build
 BIN := immich-cli
 
 CXX := g++
-CXXFLAGS := -std=c++11 -Wall -Ilib
+CXXFLAGS := -std=c++17 -Wall -Ilib -I$(shell brew --prefix nlohmann-json)/include
 LDFLAGS := -lcurl
 
 SRCS := $(wildcard $(SRC_DIR)/*.cpp)
@@ -23,5 +23,9 @@ clean:
 
 install-lib:
 	sudo apt install libcli11-dev libcli11-doc libcurl4-openssl-dev
+	brew install nlohmann-json bear
 
-.PHONY: all clean install-lib
+clangd:
+	bear -- make
+
+.PHONY: all clean install-lib clangd

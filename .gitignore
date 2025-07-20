@@ -40,3 +40,7 @@ immich-cli
 
 # debug information files
 *.dwo
+
+# clangd lsp files
+compile_commands.json
+.cache

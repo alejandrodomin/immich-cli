@@ -1,3 +1,6 @@
+#ifndef LOGIN_HPP
+#define LOGIN_HPP
+
 #include <iostream>
 
 /**
@@ -6,7 +9,7 @@
  * @param url Required url of the immich server.
  * @param key Required key for access to the immich server.
  */
-void login(std::string& url, std::string& key);
+void login(const std::string& url, const std::string& key);
 
 /**
  * @brief When using curl we need a callback function to write the response into
@@ -22,5 +25,6 @@ void login(std::string& url, std::string& key);
  * @return The return size must match the recieved size, else curl will treat it
  * as an error.
  */
-size_t write_response(char* res_data, size_t size, size_t el_num,
-                      void* user_data);
+size_t write_response(char* res_data, size_t size, size_t el_num, void* user_data);
+
+#endif
