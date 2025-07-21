@@ -6,7 +6,7 @@
 #include <filesystem>
 #include <iostream>
 
-void upload(const std::string& url, const std::string& key);
+void upload();
 
 /**
  * @brief upload the binary of a file to the immich server

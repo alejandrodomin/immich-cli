@@ -3,54 +3,52 @@
 #include <curl/curl.h>
 
 #include <algorithm>
-#include <chrono>
 #include <filesystem>
 #include <iostream>
 
 #include "../lib/constants.hpp"
-#include "../lib/login.hpp"
+#include "../lib/curl-util.hpp"
 
 using namespace std;
+using namespace chrono;
 namespace fs = std::filesystem;
+using json = nlohmann::json;
 
-string iso_time(fs::file_time_type file_time);
+curl_slist* headers(size_t, const string&);
+bool is_img_file(const fs::directory_entry&);
 
-void upload(const string& url, const string& key) {
+void upload() {
     CURL* curl = curl_easy_init();
-    string response;
-
     if (!curl) {
         cerr << "Error initializing curl." << endl;
         return;
     }
+
+    json creds = ret_creds();
+    if (!creds.contains("server") && !creds.contains("secret")) {
+        cerr << "No valid credentials found, please login first.\n";
+        return;
+    }
+
+    string url = creds.at("server");
+    string key = creds.at("secret");
+
+    string response;
     curl_easy_setopt(curl, CURLOPT_URL, (url + "/api/assets").c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_response);
-    struct curl_slist* headers = NULL;
-    headers = curl_slist_append(headers, (TOKEN_HEADER_NAME + ": " + key).c_str());
-    headers = curl_slist_append(headers, ACCEPT_APP_JSON.c_str());
 
     fs::path curr_dir = fs::current_path();
-    cout << "Searching for files under " << curr_dir << "\n";
-
+    // TODO: use a regular iteraotr so that we can spawn off a new thread on a folder
     for (const auto& file : fs::recursive_directory_iterator(curr_dir)) {
-        if (fs::file_type::regular == fs::status(file).type()) {
-            string ext = file.path().extension().string();
-            auto res = find(SUPPORTED_FILE_TYPES.begin(), SUPPORTED_FILE_TYPES.end(), ext);
+        if (is_img_file(file)) {
+            curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers(fs::hash_value(file), key));
 
-            if (SUPPORTED_FILE_TYPES.end() != res) {
-                string hash_header = "x-immich-checksum: " + to_string(fs::hash_value(file));
-                headers = curl_slist_append(headers, hash_header.c_str());
-                curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-
-                upload_file(curl, file);
-                cout << "response from immich " << response << " for file " << file << endl;
-                break;
-            }
+            upload_file(curl, file);
+            cout << "response from immich " << response << " for file " << file << endl;
+            break;
         }
     }
-
-    curl_easy_cleanup(curl);
 }
 
 void upload_file(CURL* curl, const fs::path& file) {
@@ -91,11 +89,27 @@ void upload_file(CURL* curl, const fs::path& file) {
     curl_mime_free(mime);
 }
 
-string iso_time(fs::file_time_type file_time) {
-    auto sctp = std::chrono::time_point_cast<std::chrono::system_clock::duration>(
-        file_time - std::filesystem::file_time_type::clock::now() + std::chrono::system_clock::now());
-    std::time_t cftime = std::chrono::system_clock::to_time_t(sctp);
-    std::ostringstream oss;
-    oss << std::put_time(std::gmtime(&cftime), "%Y-%m-%dT%H:%M:%SZ");
-    return oss.str();
+curl_slist* headers(size_t hash, const string& key) {
+    struct curl_slist* headers = NULL;
+    headers = curl_slist_append(headers, (TOKEN_HEADER_NAME + ": " + key).c_str());
+    headers = curl_slist_append(headers, ACCEPT_APP_JSON.c_str());
+
+    string hash_header = "x-immich-checksum: " + to_string(hash);
+    headers = curl_slist_append(headers, hash_header.c_str());
+
+    return headers;
+}
+
+bool is_img_file(const fs::directory_entry& file) {
+    if (fs::file_type::regular != fs::status(file).type()) {
+        return false;
+    }
+
+    string ext = file.path().extension().string();
+    auto res = find(SUPPORTED_FILE_TYPES.begin(), SUPPORTED_FILE_TYPES.end(), ext);
+    if (SUPPORTED_FILE_TYPES.end() == res) {
+        return false;
+    }
+
+    return true;
 }
