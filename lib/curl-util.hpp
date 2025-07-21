@@ -2,7 +2,6 @@
 #define CURLUTIL_HPP
 
 #include <filesystem>
-#include <iostream>
 #include <nlohmann/json.hpp>
 
 /**

@@ -4,7 +4,6 @@
 #include <curl/curl.h>
 
 #include <filesystem>
-#include <iostream>
 
 void upload();
 

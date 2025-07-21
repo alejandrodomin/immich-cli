@@ -2,7 +2,6 @@
 #define CONSTANTS_HPP
 
 #include <filesystem>
-#include <iostream>
 #include <vector>
 
 inline const std::filesystem::path AUTH_FILE_LOC = std::string(std::getenv("HOME")) + "/.config/immich/auth.json";

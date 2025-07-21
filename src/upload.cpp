@@ -8,6 +8,7 @@
 
 #include "../lib/constants.hpp"
 #include "../lib/curl-util.hpp"
+#include "../lib/statx-util.hpp"
 
 using namespace std;
 using namespace chrono;
@@ -79,16 +80,20 @@ void upload_file(CURL* curl, const fs::path& file) {
     curl_mime_name(device_field, "deviceId");
     curl_mime_data(device_field, "CLI", 3);
 
-    string time = iso_time(fs::last_write_time(file));
+    string m_time = iso_time(fs::last_write_time(file));
+    string b_time = m_time;
+    if (STATX_COMPATIBLE) {
+        b_time = iso_time(birth_time(file));
+    }
+
     curl_mimepart* created_field = curl_mime_addpart(mime);
     curl_mime_name(created_field, "fileCreatedAt");
-    curl_mime_data(created_field, time.c_str(), CURL_ZERO_TERMINATED);
+    curl_mime_data(created_field, b_time.c_str(), CURL_ZERO_TERMINATED);
 
     curl_mimepart* modified_field = curl_mime_addpart(mime);
     curl_mime_name(modified_field, "fileModifiedAt");
-    curl_mime_data(modified_field, time.c_str(), CURL_ZERO_TERMINATED);
+    curl_mime_data(modified_field, m_time.c_str(), CURL_ZERO_TERMINATED);
 
-    cout << "Found 1 valid file " << file << " to upload." << endl;
     curl_easy_setopt(curl, CURLOPT_MIMEPOST, mime);
 
     CURLcode res_code = curl_easy_perform(curl);
@@ -116,6 +121,8 @@ bool is_img_file(const fs::directory_entry& file) {
     }
 
     string ext = file.path().extension().string();
+    transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c) { return tolower(c); });
+
     auto res = find(SUPPORTED_FILE_TYPES.begin(), SUPPORTED_FILE_TYPES.end(), ext);
     if (SUPPORTED_FILE_TYPES.end() == res) {
         return false;

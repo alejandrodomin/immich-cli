@@ -1,7 +1,7 @@
 #ifndef LOGIN_HPP
 #define LOGIN_HPP
 
-#include <iostream>
+#include <string>
 
 /**
  * @brief Entry point for the functionality of the login command.
