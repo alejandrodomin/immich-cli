@@ -98,7 +98,7 @@ void upload_file(CURL* curl, const fs::path& file) {
 
     CURLcode res_code = curl_easy_perform(curl);
     if (CURLE_OK == res_code) {
-        cout << "Successfully uploaded " << file << " to immich." << endl;
+        // cout << "Successfully uploaded " << file << " to immich." << endl;
     }
 
     curl_mime_free(mime);
