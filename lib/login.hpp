@@ -11,4 +11,9 @@
  */
 void login(const std::string& url, const std::string& key);
 
+/**
+ * @brief Logs out of immich server by deleting the saved creds at AUTH_FILE_LOC
+ */
+void logout();
+
 #endif

@@ -2,6 +2,7 @@
 
 #include <curl/curl.h>
 
+#include <filesystem>
 #include <iostream>
 #include <nlohmann/json.hpp>
 
@@ -9,6 +10,7 @@
 #include "../lib/curl-util.hpp"
 
 using json = nlohmann::json;
+namespace fs = std::filesystem;
 using namespace std;
 
 void login(const string &url, const string &key) {
@@ -40,4 +42,18 @@ void login(const string &url, const string &key) {
     }
 
     curl_easy_cleanup(curl);
+}
+
+void logout() {
+    if (!fs::exists(AUTH_FILE_LOC)) {
+        cout << "Not logged in, no further action needed\n";
+        return;
+    }
+
+    if (!fs::remove(AUTH_FILE_LOC)) {
+        cerr << "Error during logout process\n";
+        return;
+    }
+
+    cout << "Logged out successfully\n";
 }
