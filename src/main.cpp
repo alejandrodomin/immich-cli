@@ -13,7 +13,7 @@ int main(int argc, char **argv) {
 
     App *login_cmd = app.add_subcommand("login", "Login using API key");
     App *logout_cmd = app.add_subcommand("logout", "Logout from immich server");
-    App *upload_cmd = app.add_subcommand("upload", "Upload assets");
+    App *upload_cmd = app.add_subcommand("upload", "Upload all assets, recursively, under the current directory");
 
     string url, key;
     login_cmd->add_option("url", url, "Immich server url")->required();
