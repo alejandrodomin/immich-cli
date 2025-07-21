@@ -1,6 +1,7 @@
 #include "../lib/curl-util.hpp"
 
 #include <fstream>
+#include <iostream>
 
 #include "../lib/constants.hpp"
 
