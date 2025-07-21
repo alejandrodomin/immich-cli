@@ -9,6 +9,8 @@ using namespace std;
 using namespace CLI;
 
 int main(int argc, char **argv) {
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+
     App app{"Command line tool for immich"};
 
     App *login_cmd = app.add_subcommand("login", "Login using API key");
@@ -24,6 +26,7 @@ int main(int argc, char **argv) {
     upload_cmd->callback([]() { upload(); });
 
     CLI11_PARSE(app, argc, argv);
+    curl_global_cleanup();
 
     return 0;
 }

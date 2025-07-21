@@ -43,10 +43,12 @@ void upload() {
     // TODO: use a regular iteraotr so that we can spawn off a new thread on a folder
     for (const auto& file : fs::recursive_directory_iterator(curr_dir)) {
         if (is_img_file(file)) {
-            curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers(fs::hash_value(file), key));
-
+            curl_slist* h_list = headers(fs::hash_value(file), key);
+            curl_easy_setopt(curl, CURLOPT_HTTPHEADER, h_list);
             // TODO: add json check for success upload and duplicate upload.
             upload_file(curl, file);
+
+            curl_slist_free_all(h_list);
             count++;
         }
 
@@ -56,6 +58,7 @@ void upload() {
     }
 
     cout << "Uploaded a total of " << count << " files\n.";
+    curl_easy_cleanup(curl);
 }
 
 void upload_file(CURL* curl, const fs::path& file) {

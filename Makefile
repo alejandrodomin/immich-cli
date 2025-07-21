@@ -29,6 +29,6 @@ clangd:
 	bear -- make
 
 valgrind:
-	valgrind --leak-check=full --show-leak-kinds=all ./$(BIN)
+	valgrind --leak-check=full --show-leak-kinds=all ./$(BIN) upload
 
 .PHONY: all clean install-lib clangd valgrind
