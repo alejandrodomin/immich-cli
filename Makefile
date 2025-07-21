@@ -22,7 +22,10 @@ clean:
 	rm -rf $(OBJ_DIR) $(BIN)
 
 install-lib:
-	sudo apt install libcli11-dev libcli11-doc libcurl4-openssl-dev valgrind
+	sudo apt install libcli11-dev libcurl4-openssl-dev valgrind
+
+install-dev: install-lib
+	sudo apt install libcli11-doc valgrind
 	brew install nlohmann-json bear
 
 clangd:
