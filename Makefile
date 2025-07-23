@@ -22,11 +22,12 @@ clean:
 	rm -rf $(OBJ_DIR) $(BIN)
 
 install-lib:
-	sudo apt install libcli11-dev libcurl4-openssl-dev valgrind
+	sudo apt install libcli11-dev libcurl4-openssl-dev
+	brew install nlohmann-json
 
 install-dev: install-lib
 	sudo apt install libcli11-doc valgrind
-	brew install nlohmann-json bear
+	brew install bear
 
 clangd:
 	bear -- make
@@ -34,4 +35,9 @@ clangd:
 valgrind:
 	valgrind --leak-check=full --show-leak-kinds=all ./$(BIN) upload
 
-.PHONY: all clean install-lib clangd valgrind
+docker: all
+	cp $(HOME)/.config/immich/auth.json $(OBJ_DIR)/
+	sudo docker build -f test/Dockerfile -t cli .
+	sudo docker run --network host -d cli:latest
+
+.PHONY: all clean install-lib clangd valgrind docker

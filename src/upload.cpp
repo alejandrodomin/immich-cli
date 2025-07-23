@@ -53,7 +53,7 @@ void upload() {
             count++;
         }
 
-        if (count % 1000 == 0) {
+        if (count % 100 == 0) {
             cout << "Uploaded " << count << " files so far\r" << flush;
         }
     }

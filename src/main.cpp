@@ -23,6 +23,7 @@ int main(int argc, char **argv) {
 
     string raw_loc;
     app.add_flag("-a,--auth-loc", raw_loc, "Sets location to check for auth file");
+    app.parse_complete_callback([&raw_loc]() { init_auth_loc(raw_loc); });
 
     App *login_cmd = app.add_subcommand("login", "Login using API key");
     App *logout_cmd = app.add_subcommand("logout", "Logout from immich server");
@@ -32,8 +33,7 @@ int main(int argc, char **argv) {
     login_cmd->add_option("url", url, "Immich server url")->required();
     login_cmd->add_option("key", key, "Immich API key")->required();
 
-    app.parse_complete_callback([&raw_loc]() { init_auth_loc(raw_loc); });
-    login_cmd->callback([&]() { login(url, key); });
+    login_cmd->callback([&url, &key]() { login(url, key); });
     logout_cmd->callback([]() { logout(); });
     upload_cmd->callback([]() { upload(); });
 
