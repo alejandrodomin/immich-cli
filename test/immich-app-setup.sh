@@ -19,3 +19,8 @@ if [ ! -f dog-breeds-image-dataset.zip ]; then
     curl -L -o dog-breeds-image-dataset.zip \
         https://www.kaggle.com/api/v1/datasets/download/darshanthakare/dog-breeds-image-dataset
 fi
+
+if [ ! -f workoutexercises-images.zip ]; then
+    curl -L -o workoutexercises-images.zip \
+        https://www.kaggle.com/api/v1/datasets/download/hasyimabdillah/workoutexercises-images
+fi

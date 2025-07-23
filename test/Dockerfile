@@ -8,8 +8,11 @@ RUN apt-get update && \
 COPY immich-cli /app/
 COPY build/auth.json /app/
 COPY build/dog-breeds-image-dataset.zip /app/
+COPY build/workoutexercises-images.zip /app/
 
-RUN unzip /app/dog-breeds-image-dataset.zip -d /app/dataset/
+RUN mkdir -p /app/dataset/
+RUN unzip /app/dog-breeds-image-dataset.zip -d /app/dataset/images
+RUN unzip /app/workoutexercises-images.zip -d /app/dataset/videos
 
 WORKDIR /app
 ENTRYPOINT /app/immich-cli --auth-loc=/app/auth.json upload
