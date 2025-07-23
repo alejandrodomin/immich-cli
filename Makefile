@@ -19,6 +19,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
+	sudo rm -rf $(OBJ_DIR)/postgres $(OBJ_DIR)/library
 	rm -rf $(OBJ_DIR) $(BIN)
 
 install-lib:
@@ -36,8 +37,10 @@ valgrind:
 	valgrind --leak-check=full --show-leak-kinds=all ./$(BIN) upload
 
 docker: all
-	cp $(HOME)/.config/immich/auth.json $(OBJ_DIR)/
+	bash test/immich-app-setup.sh
+	bash test/immich-fresh-token.sh
 	sudo docker build -f test/Dockerfile -t cli .
-	sudo docker run --network host -d cli:latest
+	sudo docker run --network host --rm cli:latest
+	sudo docker compose --project-directory build/ down
 
 .PHONY: all clean install-lib clangd valgrind docker
