@@ -1,7 +1,9 @@
 #!/bin/bash
 
+# step 0 - setup
 cd build
 
+# step 1 - immich docker setup
 if [ ! -f docker-compose.yml ]; then
     wget -O docker-compose.yml https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
 fi
@@ -11,3 +13,9 @@ if [ ! -f .env ]; then
 fi
 
 sudo docker compose up -d
+
+# step 2 - testing data set setup
+if [ ! -f dog-breeds-image-dataset.zip ]; then
+    curl -L -o dog-breeds-image-dataset.zip \
+        https://www.kaggle.com/api/v1/datasets/download/darshanthakare/dog-breeds-image-dataset
+fi
