@@ -4,7 +4,7 @@
 #include <filesystem>
 #include <vector>
 
-inline const std::filesystem::path AUTH_FILE_LOC = std::string(std::getenv("HOME")) + "/.config/immich/auth.json";
+extern std::filesystem::path AUTH_FILE_LOC;
 
 inline const std::string TOKEN_VALIDATION_PATH = "/api/auth/validateToken";
 inline const std::string TOKEN_HEADER_NAME = "x-api-key";
