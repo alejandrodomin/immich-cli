@@ -6,7 +6,9 @@
 *.lo
 *.o
 *.obj
+*.deb
 build/
+immich-cli_*/
 
 # Precompiled Headers
 *.gch
