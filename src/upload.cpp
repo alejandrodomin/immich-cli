@@ -16,7 +16,7 @@ namespace fs = std::filesystem;
 using json = nlohmann::json;
 
 curl_slist* headers(size_t, const string&);
-bool is_img_file(const fs::directory_entry&);
+bool is_supported_format(const fs::directory_entry&);
 
 void upload() {
     CURL* curl = curl_easy_init();
@@ -43,7 +43,7 @@ void upload() {
     int count = 0;
     // TODO: use a regular iteraotr so that we can spawn off a new thread on a folder
     for (const auto& file : fs::recursive_directory_iterator(curr_dir)) {
-        if (is_img_file(file)) {
+        if (is_supported_format(file)) {
             curl_slist* h_list = headers(fs::hash_value(file), key);
             curl_easy_setopt(curl, CURLOPT_HTTPHEADER, h_list);
             // TODO: add json check for success upload and duplicate upload.
@@ -115,16 +115,14 @@ curl_slist* headers(size_t hash, const string& key) {
     return headers;
 }
 
-bool is_img_file(const fs::directory_entry& file) {
+bool is_supported_format(const fs::directory_entry& file) {
     if (fs::file_type::regular != fs::status(file).type()) {
         return false;
     }
 
     string ext = file.path().extension().string();
     transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c) { return tolower(c); });
-
-    auto res = find(SUPPORTED_FILE_TYPES.begin(), SUPPORTED_FILE_TYPES.end(), ext);
-    if (SUPPORTED_FILE_TYPES.end() == res) {
+    if (!SUPPORTED_FILE_TYPES.count(ext)) {
         return false;
     }
 
