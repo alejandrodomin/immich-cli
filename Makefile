@@ -41,9 +41,9 @@ valgrind:
 docker: all
 	bash test/immich-app-setup.sh
 	bash test/immich-fresh-token.sh
-	sudo docker build -f test/Dockerfile -t cli .
-	sudo docker run --network host --rm cli:latest
-	sudo docker compose --project-directory build/ down
+	docker build -f test/Dockerfile -t cli .
+	docker run --network host --rm cli:latest
+	docker compose --project-directory build/ down
 
 deb-pack: all
 	bash release/deb-util.sh
