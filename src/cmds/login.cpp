@@ -1,4 +1,4 @@
-#include "../lib/login.hpp"
+#include "login.hpp"
 
 #include <curl/curl.h>
 
@@ -6,8 +6,8 @@
 #include <iostream>
 #include <nlohmann/json.hpp>
 
-#include "../lib/constants.hpp"
-#include "../lib/curl-util.hpp"
+#include "constants.hpp"
+#include "curl-util.hpp"
 
 using json = nlohmann::json;
 namespace fs = std::filesystem;

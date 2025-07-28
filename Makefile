@@ -5,19 +5,21 @@ BIN := immich-cli
 DEB := $(wildcard immich-cli_*.deb)
 
 CXX := g++
-CXXFLAGS := -std=c++17 -Wall -Ilib -I$(shell brew --prefix nlohmann-json)/include
+LIB_INCLUDE_DIRS := $(shell find lib -type d)
+CXXFLAGS := -std=c++17 -Wall $(addprefix -I,$(LIB_INCLUDE_DIRS)) -I$(shell brew --prefix nlohmann-json)/include
 LDFLAGS := -lcurl
 
-SRCS := $(wildcard $(SRC_DIR)/*.cpp)
-OBJS := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRCS))
+SRCS := $(shell find $(SRC_DIR) $(LIB_DIR) -type f -name '*.cpp')
+OBJS := $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(SRCS))
+
 
 all: $(BIN)
 
 $(BIN): $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
-	@mkdir -p $(OBJ_DIR)
+$(OBJ_DIR)/%.o: %.cpp
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:

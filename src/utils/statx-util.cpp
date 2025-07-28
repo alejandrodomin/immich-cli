@@ -1,4 +1,4 @@
-#include "../lib/statx-util.hpp"
+#include "statx-util.hpp"
 
 #include <fcntl.h>
 #include <linux/stat.h>

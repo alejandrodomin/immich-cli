@@ -1,4 +1,4 @@
-#include "../lib/upload.hpp"
+#include "upload.hpp"
 
 #include <curl/curl.h>
 
@@ -6,9 +6,9 @@
 #include <filesystem>
 #include <iostream>
 
-#include "../lib/constants.hpp"
-#include "../lib/curl-util.hpp"
-#include "../lib/statx-util.hpp"
+#include "constants.hpp"
+#include "curl-util.hpp"
+#include "statx-util.hpp"
 
 using namespace std;
 using namespace chrono;

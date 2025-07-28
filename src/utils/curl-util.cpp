@@ -1,9 +1,9 @@
-#include "../lib/curl-util.hpp"
+#include "curl-util.hpp"
 
 #include <fstream>
 #include <iostream>
 
-#include "../lib/constants.hpp"
+#include "constants.hpp"
 
 using namespace std;
 using namespace chrono;

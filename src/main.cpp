@@ -3,8 +3,8 @@
 #include <CLI/Formatter.hpp>
 #include <filesystem>
 
-#include "../lib/login.hpp"
-#include "../lib/upload.hpp"
+#include "login.hpp"
+#include "upload.hpp"
 
 using namespace std;
 using namespace CLI;
