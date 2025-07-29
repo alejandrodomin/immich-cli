@@ -42,6 +42,7 @@ valgrind:
 
 docker: all
 	bash test/immich-app-setup.sh
+	docker compose --project-directory build/ up -d
 	bash test/immich-fresh-token.sh
 	docker build -f test/Dockerfile -t cli .
 	docker run --network host --rm cli:latest

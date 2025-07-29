@@ -5,6 +5,8 @@
 
 #include <filesystem>
 
+inline const int SIZE_OF_BATCH = 25;
+
 void upload();
 
 /**

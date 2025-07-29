@@ -3,8 +3,11 @@
 #include <curl/curl.h>
 
 #include <algorithm>
+#include <deque>
 #include <filesystem>
 #include <iostream>
+#include <thread>
+#include <utility>
 
 #include "constants.hpp"
 #include "curl-util.hpp"
@@ -17,6 +20,8 @@ using json = nlohmann::json;
 
 curl_slist* headers(size_t, const string&);
 bool is_supported_format(const fs::directory_entry&);
+vector<fs::path> dir_crawl(const fs::path&);
+void batch_upload(vector<fs::path>, CURL*, const string&);
 
 void upload() {
     CURL* curl = curl_easy_init();
@@ -40,25 +45,27 @@ void upload() {
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_response);
 
     fs::path curr_dir = fs::current_path();
-    int count = 0;
-    // TODO: use a regular iteraotr so that we can spawn off a new thread on a folder
-    for (const auto& file : fs::recursive_directory_iterator(curr_dir)) {
-        if (is_supported_format(file)) {
-            curl_slist* h_list = headers(fs::hash_value(file), key);
-            curl_easy_setopt(curl, CURLOPT_HTTPHEADER, h_list);
-            // TODO: add json check for success upload and duplicate upload.
-            upload_file(curl, file);
+    vector<fs::path> imgs = dir_crawl(curr_dir);
+    auto start = imgs.begin();
 
-            curl_slist_free_all(h_list);
-            count++;
-        }
+    auto workers = vector<thread>{};
+    while (imgs.end() > start) {
+        auto end = start + SIZE_OF_BATCH;
+        if (end >= imgs.end()) end = imgs.end();
 
-        if (count % 100 == 0) {
-            cout << "Uploaded " << count << " files so far\r" << flush;
-        }
+        vector<fs::path> sub_imgs(start, end);
+        thread worker(batch_upload, std::move(sub_imgs), curl_easy_duphandle(curl), key);
+        workers.push_back(std::move(worker));
+
+        start = end;
     }
 
-    cout << "Uploaded a total of " << count << " files\n.";
+    for (auto& entry : workers) {
+        if (entry.joinable()) entry.join();
+    }
+    cout << "\x1b[2Kfinished uploading " << imgs.size() << "\n";
+
+    // cout << "Uploaded a total of " << count << " files\n.";
     curl_easy_cleanup(curl);
 }
 
@@ -127,4 +134,43 @@ bool is_supported_format(const fs::directory_entry& file) {
     }
 
     return true;
+}
+
+vector<fs::path> dir_crawl(const fs::path& dir) {
+    auto imgs = vector<fs::path>{};
+    if (fs::file_type::directory != fs::status(dir).type()) {
+        return imgs;
+    }
+
+    deque<fs::path> dirs = {dir};
+    while (!dirs.empty()) {
+        fs::path curr_dir = dirs.front();
+        dirs.pop_front();
+
+        cout << "searching through dir " << curr_dir << " ...\r";
+        for (const auto& entry : fs::directory_iterator(curr_dir)) {
+            if (fs::file_type::directory == fs::status(entry).type()) {
+                dirs.push_back(entry);
+            } else if (fs::file_type::regular == fs::status(entry).type() && is_supported_format(entry)) {
+                imgs.push_back(entry);
+            }
+        }
+    }
+
+    cout << "\x1b[2Kfound " << imgs.size() << " file(s)\n";
+    return imgs;
+}
+
+void batch_upload(vector<fs::path> imgs, CURL* curl, const string& key) {
+    cout << "upload batch of " << imgs.size() << " image(s)\r" << flush;
+    for (auto file : imgs) {
+        curl_slist* h_list = headers(fs::hash_value(file), key);
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, h_list);
+
+        // TODO: add json check for success upload and duplicate upload.
+        upload_file(curl, file);
+        curl_slist_free_all(h_list);
+    }
+
+    curl_easy_cleanup(curl);
 }
