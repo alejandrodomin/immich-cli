@@ -48,14 +48,14 @@ void upload() {
     vector<fs::path> imgs = dir_crawl(curr_dir);
     auto start = imgs.begin();
 
-    auto workers = vector<thread>{};
+    array<thread, 8> workers = {};
     while (imgs.end() > start) {
         auto end = start + SIZE_OF_BATCH;
         if (end >= imgs.end()) end = imgs.end();
 
         vector<fs::path> sub_imgs(start, end);
         thread worker(batch_upload, std::move(sub_imgs), curl_easy_duphandle(curl), key);
-        workers.push_back(std::move(worker));
+        // workers.push_back(std::move(worker));
 
         start = end;
     }

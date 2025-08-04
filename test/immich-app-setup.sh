@@ -12,7 +12,7 @@ if [ ! -f .env ]; then
     wget -O .env https://github.com/immich-app/immich/releases/latest/download/example.env
 fi
 
-sudo docker compose up -d
+docker compose up -d
 
 # step 2 - testing data set setup
 if [ ! -f dog-breeds-image-dataset.zip ]; then
