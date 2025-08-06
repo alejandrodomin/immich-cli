@@ -3,8 +3,10 @@
 #include <curl/curl.h>
 
 #include <algorithm>
+#include <deque>
 #include <filesystem>
 #include <iostream>
+#include <thread>
 
 #include "constants.hpp"
 #include "curl-util.hpp"
@@ -17,6 +19,7 @@ using json = nlohmann::json;
 
 curl_slist* headers(size_t, const string&);
 bool is_supported_format(const fs::directory_entry&);
+void bulk_upload(vector<fs::path> imgs, CURL* curl, string key);
 
 void upload() {
     CURL* curl = curl_easy_init();
@@ -40,25 +43,52 @@ void upload() {
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_response);
 
     fs::path curr_dir = fs::current_path();
-    int count = 0;
-    // TODO: use a regular iteraotr so that we can spawn off a new thread on a folder
-    for (const auto& file : fs::recursive_directory_iterator(curr_dir)) {
-        if (is_supported_format(file)) {
-            curl_slist* h_list = headers(fs::hash_value(file), key);
-            curl_easy_setopt(curl, CURLOPT_HTTPHEADER, h_list);
-            // TODO: add json check for success upload and duplicate upload.
-            upload_file(curl, file);
+    deque<fs::path> dirs = {curr_dir};
+    vector<fs::path> images;
+    while (!dirs.empty()) {
+        fs::path dir = dirs.front();
+        dirs.pop_front();
 
-            curl_slist_free_all(h_list);
-            count++;
-        }
-
-        if (count % 100 == 0) {
-            cout << "Uploaded " << count << " files so far\r" << flush;
+        for (const auto& entry : fs::directory_iterator(dir)) {
+            if (fs::file_type::directory != fs::status(entry).type()) {
+                dirs.push_back(entry);
+            } else if (is_supported_format(entry)) {
+                images.push_back(entry);
+            }
         }
     }
 
-    cout << "Uploaded a total of " << count << " files\n.";
+    array<thread, 8> thread_pool;
+    const unsigned int split = images.size() / 8;
+    auto start = images.begin();
+    for (int i = 0; i < 8; i++) {
+        auto end = start + split;
+        if (end > images.end()) end = images.end();
+
+        vector<fs::path> split_imgs(start, end);
+        thread t(&bulk_upload, &split_imgs, curl, &key);
+        thread_pool[i] = std::move(t);
+
+        start = end;
+    }
+
+    for (thread& t : thread_pool) {
+        if (t.joinable()) t.join();
+    }
+
+    curl_easy_cleanup(curl);
+}
+
+void bulk_upload(const vector<fs::path>& imgs, CURL* handle, const string& key) {
+    CURL* curl = curl_easy_duphandle(handle);
+    for (auto file : imgs) {
+        curl_slist* h_list = headers(fs::hash_value(file), key);
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, h_list);
+        // TODO: add json check for success upload and duplicate upload.
+        upload_file(curl, file);
+
+        curl_slist_free_all(h_list);
+    }
     curl_easy_cleanup(curl);
 }
 
