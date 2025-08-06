@@ -6,12 +6,12 @@
 #include <deque>
 #include <filesystem>
 #include <iostream>
-#include <thread>
 #include <utility>
 
 #include "constants.hpp"
 #include "curl-util.hpp"
 #include "statx-util.hpp"
+#include "thread-utils.hpp"
 
 using namespace std;
 using namespace chrono;
@@ -44,27 +44,22 @@ void upload() {
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_response);
 
+    ThreadPool t_pool(8);
     fs::path curr_dir = fs::current_path();
     vector<fs::path> imgs = dir_crawl(curr_dir);
     auto start = imgs.begin();
 
-    array<thread, 8> workers = {};
     while (imgs.end() > start) {
         auto end = start + SIZE_OF_BATCH;
         if (end >= imgs.end()) end = imgs.end();
 
         vector<fs::path> sub_imgs(start, end);
-        thread worker(batch_upload, std::move(sub_imgs), curl_easy_duphandle(curl), key);
-        // workers.push_back(std::move(worker));
+        t_pool.add_job(&batch_upload); /* , std::move(sub_imgs), curl_easy_duphandle(curl), key); */
 
         start = end;
     }
 
-    for (auto& entry : workers) {
-        if (entry.joinable()) entry.join();
-    }
     cout << "\x1b[2Kfinished uploading " << imgs.size() << "\n";
-
     // cout << "Uploaded a total of " << count << " files\n.";
     curl_easy_cleanup(curl);
 }
