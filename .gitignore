@@ -48,3 +48,6 @@ immich-cli
 # clangd lsp files
 compile_commands.json
 .cache
+# pixi environments
+.pixi/*
+!.pixi/config.toml

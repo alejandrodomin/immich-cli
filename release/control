@@ -1,7 +1,0 @@
-Package: immich-cli
-Version: 0.alpha
-Section: utils
-Priority: optional
-Architecture: amd64
-Maintainer: Alejandro Dominguez <a283le.programmer@gmail.com>
-Description: CLI tool for interacting with Immich
