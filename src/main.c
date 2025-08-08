@@ -1,28 +1,19 @@
-#include <stdio.h>
 #include <string.h>
 
-struct cmd {
-    void (*run)();
-};
+#include "cmd_utils.h"
 
-void help();
+int main(int argc, char *argv[]) {
+    if (argc < 2) return 1;
+    if (argc > 2) printf("Only one command is accepted, all others will be ignored.\n");
 
-#define HELP 0
-static const struct cmd cmd_table[] = {
-    [HELP] = {help},
-};
+    unsigned int len = sizeof cmd_table / sizeof(struct cmd);
+    for (int i = 0; i < len; i++) {
+        struct cmd curr = cmd_table[i];
 
-int main(int argc, char* argv[]) {
-    if (argc != 2) {
-        return 1;
-    }
-
-    if (strcmp("help", argv[1]) == 0) {
-        struct cmd help_cmd = cmd_table[HELP];
-        help_cmd.run();
+        if (strcmp(curr.str, argv[1]) == 0) {
+            curr.run();
+        }
     }
 
     return 0;
 }
-
-void help() { printf("options list\n"); }
