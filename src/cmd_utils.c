@@ -2,9 +2,12 @@
 
 #include <stdio.h>
 
-void help() {
-    const char *const opt_help =
-        "Usage: immich [cmd]\n\n"
+void help(char* argv[]) {
+    const char* const opt_help =
+        "Usage: immich [cmd] [options]\n\n"
+        "Options:\n"
+        "  --url  - url of your immich server"
+        "  --key"
         "Commands:\n"
         "  help   - prints this page\n"
         "  login  - logs into your specifie immich server\n"
@@ -13,5 +16,4 @@ void help() {
     printf("%s", opt_help);
 }
 
-void login() { printf("login cmd\n"); }
-void upload() { printf("upload cmd\n"); }
+void login(char* argv[]) { printf("login cmd\n"); }
